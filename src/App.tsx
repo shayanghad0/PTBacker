@@ -24,12 +24,15 @@ export function App() {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
+    // Update root classes
     document.documentElement.classList.toggle('light-mode', newTheme === 'light');
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
   };
 
   // Apply theme class on mount and changes
   useEffect(() => {
     document.documentElement.classList.toggle('light-mode', theme === 'light');
+    document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
   const [parsedData, setParsedData] = useState<ParsedPriceData | null>(null);

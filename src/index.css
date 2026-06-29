@@ -30,7 +30,7 @@
 
 /* Light mode overrides */
 .light-mode {
-  /* Backgrounds */
+  /* Backgrounds - solid */
   .bg-slate-950 { background-color: #ffffff; }
   .bg-slate-900 { background-color: #f8fafc; }
   .bg-slate-800 { background-color: #e2e8f0; }
@@ -38,7 +38,31 @@
   .bg-slate-600 { background-color: #94a3b8; }
   .bg-slate-500 { background-color: #64748b; }
   .bg-slate-400 { background-color: #475569; }
-  
+
+  /* Backgrounds with opacity - override all opacity levels */
+  .bg-slate-950\/80 { background-color: rgba(255, 255, 255, 0.8) !important; }
+  .bg-slate-950\/90 { background-color: rgba(255, 255, 255, 0.9) !important; }
+  .bg-slate-950\/50 { background-color: rgba(255, 255, 255, 0.5) !important; }
+  .bg-slate-950\/60 { background-color: rgba(255, 255, 255, 0.6) !important; }
+  .bg-slate-950\/70 { background-color: rgba(255, 255, 255, 0.7) !important; }
+  .bg-slate-950\/40 { background-color: rgba(255, 255, 255, 0.4) !important; }
+  .bg-slate-950\/30 { background-color: rgba(255, 255, 255, 0.3) !important; }
+  .bg-slate-950\/20 { background-color: rgba(255, 255, 255, 0.2) !important; }
+  .bg-slate-950\/10 { background-color: rgba(255, 255, 255, 0.1) !important; }
+
+  .bg-slate-900\/80 { background-color: rgba(255, 255, 255, 0.8) !important; }
+  .bg-slate-900\/50 { background-color: rgba(255, 255, 255, 0.5) !important; }
+  .bg-slate-800\/50 { background-color: rgba(241, 245, 249, 0.5) !important; }
+  .bg-slate-800\/80 { background-color: rgba(226, 232, 240, 0.8) !important; }
+  .bg-slate-800\/30 { background-color: rgba(226, 232, 240, 0.3) !important; }
+  .bg-slate-800\/20 { background-color: rgba(226, 232, 240, 0.2) !important; }
+
+  .bg-gray-100\/50 { background-color: rgba(241, 245, 249, 0.5) !important; }
+  .bg-gray-100\/90 { background-color: rgba(241, 245, 249, 0.9) !important; }
+  .bg-gray-100\/60 { background-color: rgba(241, 245, 249, 0.6) !important; }
+  .bg-gray-200\/50 { background-color: rgba(226, 232, 240, 0.5) !important; }
+  .bg-gray-200\/90 { background-color: rgba(226, 232, 240, 0.9) !important; }
+
   /* Text colors */
   .text-slate-100 { color: #0f172a; }
   .text-slate-200 { color: #1e293b; }
@@ -46,13 +70,23 @@
   .text-slate-400 { color: #475569; }
   .text-slate-500 { color: #64748b; }
   .text-slate-600 { color: #94a3b8; }
+  .text-gray-900 { color: #0f172a; }
+  .text-gray-800 { color: #1e293b; }
+  .text-gray-700 { color: #334155; }
+  .text-gray-600 { color: #475569; }
+  .text-gray-500 { color: #64748b; }
+  .text-gray-400 { color: #94a3b8; }
 
   /* Borders */
   .border-slate-800 { border-color: #d1d5db; }
   .border-slate-700 { border-color: #e5e7eb; }
   .border-slate-600 { border-color: #f3f4f6; }
+  .border-gray-300 { border-color: #d1d5db; }
+  .border-gray-200 { border-color: #e5e7eb; }
+  .border-slate-800\/50 { border-color: rgba(209, 213, 219, 0.5) !important; }
+  .border-gray-300\/50 { border-color: rgba(209, 213, 219, 0.5) !important; }
 
-  /* Shadows for cards */
+  /* Shadows */
   .shadow-xl { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025); }
 
   /* Scrollbar */
@@ -60,17 +94,23 @@
   ::-webkit-scrollbar-thumb { background: #cbd5e1; }
   ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-  /* Code blocks */
-  .bg-slate-950 { background-color: #f1f5f9; }
-  .text-slate-300 { color: #1e293b; }
-  .border-slate-800 { border-color: #d1d5db; }
-
-  /* Additional overrides for hover states */
+  /* Hover states */
   .hover\:bg-slate-800:hover { background-color: #e2e8f0; }
   .hover\:border-slate-700:hover { border-color: #cbd5e1; }
   .hover\:text-slate-200:hover { color: #0f172a; }
+  .hover\:bg-slate-700\/80:hover { background-color: rgba(203, 213, 225, 0.8) !important; }
+  .hover\:bg-slate-800\/30:hover { background-color: rgba(226, 232, 240, 0.3) !important; }
+  .hover\:bg-gray-200\/30:hover { background-color: rgba(226, 232, 240, 0.3) !important; }
+  .hover\:bg-gray-300:hover { background-color: #d1d5db; }
 
-  /* Group hover for upload */
-  .group:hover .group-hover\:bg-cyan-500\/20 { background-color: rgba(6, 182, 212, 0.1); }
+  /* Group hover */
+  .group:hover .group-hover\:bg-cyan-500\/20 { background-color: rgba(6, 182, 212, 0.1) !important; }
   .group:hover .group-hover\:text-cyan-400 { color: #0e7490; }
+
+  /* Table header sticky background - ensure light mode */
+  thead.bg-slate-950\/90 { background-color: rgba(255, 255, 255, 0.9) !important; }
+  thead.bg-gray-100\/90 { background-color: rgba(241, 245, 249, 0.9) !important; }
+
+  /* Fix for "No Data Loaded" banner */
+  .bg-slate-950\/50 { background-color: rgba(255, 255, 255, 0.5) !important; }
 }
