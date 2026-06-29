@@ -4,13 +4,13 @@ export interface Trade {
   id: string;
   type: TradeType;
   price: number;
-  amount: number;       // Units bought/sold
-  value: number;        // Total dollar value of trade ($)
-  index: number;        // Time index (second)
-  keyName: string;      // Original JSON key (e.g., 'p14')
-  portfolioAfter: number; // Total portfolio equity immediately after trade
-  profit?: number;      // Dollar profit/loss (only for SELL trades)
-  profitPercent?: number; // % profit/loss (only for SELL trades)
+  amount: number;
+  value: number;
+  index: number;
+  keyName: string;
+  portfolioAfter: number;
+  profit?: number;
+  profitPercent?: number;
 }
 
 export interface StrategyState {
@@ -39,6 +39,7 @@ export interface BacktestConfig {
   rsiPeriod?: number;
   rsiBuyThreshold?: number;
   rsiSellThreshold?: number;
+  momentumLookback?: number; // new
 }
 
 export interface BacktestDataPoint {
@@ -70,6 +71,12 @@ export interface BacktestResult {
   buyAndHoldFinalValue: number;
   trades: Trade[];
   timeline: BacktestDataPoint[];
+  profitFactor: number;
+  averageWin: number;
+  averageLoss: number;
+  expectancy: number;
+  totalGrossProfit: number;
+  totalGrossLoss: number;
 }
 
 export interface ParsedPriceData {

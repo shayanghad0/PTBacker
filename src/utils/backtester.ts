@@ -156,6 +156,7 @@ export function runBacktest(
   const fastPeriod = config?.fastPeriod ?? 5;
   const slowPeriod = config?.slowPeriod ?? 20;
   const rsiPeriod = config?.rsiPeriod ?? 14;
+  const momentumLookback = config?.momentumLookback ?? 10;
 
   let balance = initialBalance;
   let holdings = 0;
@@ -179,7 +180,7 @@ export function runBacktest(
       balance,
       portfolioValue: currentEquityBefore,
       tradesCount: trades.length,
-      customParams: { fastPeriod, slowPeriod }
+      customParams: { fastPeriod, slowPeriod, momentumLookback }
     };
 
     const action = strategy(price, i, state);
@@ -273,6 +274,22 @@ export function runBacktest(
     ? (winningTradesCount / sellTradesCount) * 100 
     : 0;
 
+  // New metrics
+  let totalGrossProfit = 0;
+  let totalGrossLoss = 0;
+  for (const t of sellTrades) {
+    const profit = t.profit ?? 0;
+    if (profit > 0) {
+      totalGrossProfit += profit;
+    } else if (profit < 0) {
+      totalGrossLoss += Math.abs(profit);
+    }
+  }
+  const profitFactor = totalGrossLoss === 0 ? (totalGrossProfit > 0 ? Infinity : 0) : totalGrossProfit / totalGrossLoss;
+  const averageWin = winningTradesCount > 0 ? totalGrossProfit / winningTradesCount : 0;
+  const averageLoss = losingTradesCount > 0 ? totalGrossLoss / losingTradesCount : 0;
+  const expectancy = sellTradesCount > 0 ? (totalGrossProfit - totalGrossLoss) / sellTradesCount : 0;
+
   // Buy and hold benchmark
   const firstPrice = prices.length > 0 ? prices[0] : 0;
   const buyAndHoldUnits = firstPrice > 0 ? initialBalance / firstPrice : 0;
@@ -296,6 +313,12 @@ export function runBacktest(
     buyAndHoldReturnPercent,
     buyAndHoldFinalValue,
     trades,
-    timeline
+    timeline,
+    profitFactor,
+    averageWin,
+    averageLoss,
+    expectancy,
+    totalGrossProfit,
+    totalGrossLoss
   };
 }

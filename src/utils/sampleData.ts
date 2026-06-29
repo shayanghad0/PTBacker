@@ -14,7 +14,6 @@ function generateDataset(
 ): SampleDataset {
   const data: Record<string, number> = {};
   for (let i = 1; i <= count; i++) {
-    // Round to 2 decimal places for clean prices
     const val = Number(generator(i).toFixed(2));
     data[`p${i}`] = val;
   }
@@ -34,7 +33,7 @@ export const SAMPLE_DATASETS: SampleDataset[] = [
     300,
     (i) => {
       const base = 100;
-      const trend = i * 0.45; // up 135 over 300s
+      const trend = i * 0.45;
       const cycle = Math.sin(i / 12) * 4 + Math.cos(i / 5) * 2;
       return Math.max(10, base + trend + cycle);
     }
@@ -56,10 +55,8 @@ export const SAMPLE_DATASETS: SampleDataset[] = [
     350,
     (i) => {
       if (i <= 180) {
-        // Pump
         return 50 + Math.pow(i / 180, 2) * 150 + Math.sin(i / 6) * 3;
       } else {
-        // Crash & Consolidation
         const decay = (i - 180) / 170;
         return Math.max(35, 200 - decay * 145 + Math.sin(i / 8) * 4);
       }
@@ -83,6 +80,17 @@ export const SAMPLE_DATASETS: SampleDataset[] = [
     (i) => {
       const base = 50;
       return base + Math.sin(i / 6) * 10 + (i * 0.3);
+    }
+  ),
+  generateDataset(
+    'Mean Reversion Swing',
+    '350-second oscillating price with mean reversion; triggers RSI-based entries.',
+    350,
+    (i) => {
+      const mean = 100;
+      const oscillation = Math.sin(i / 15) * 15 + Math.cos(i / 7) * 5;
+      const noise = (Math.random() - 0.5) * 2;
+      return mean + oscillation + noise;
     }
   )
 ];

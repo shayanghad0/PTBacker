@@ -10,9 +10,28 @@ import { parsePriceJson } from './utils/parser';
 import { runBacktest, createMACrossoverStrategy, createRSIStrategy, createMomentumStrategy } from './utils/backtester';
 import { SAMPLE_DATASETS } from './utils/sampleData';
 import { BacktestResult, BacktestConfig, ParsedPriceData } from './types';
-import { LineChart, Table, TrendingUp, Code, Activity, Layers } from 'lucide-react';
+import { LineChart, Table, TrendingUp, Code, Activity, Layers, Upload, FileJson } from 'lucide-react';
 
 export function App() {
+  // Theme state (default dark)
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const stored = localStorage.getItem('theme');
+    return stored === 'light' ? 'light' : 'dark';
+  });
+
+  // Toggle theme
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.classList.toggle('light-mode', newTheme === 'light');
+  };
+
+  // Apply theme class on mount and changes
+  useEffect(() => {
+    document.documentElement.classList.toggle('light-mode', theme === 'light');
+  }, [theme]);
+
   const [parsedData, setParsedData] = useState<ParsedPriceData | null>(null);
   const [backtestResult, setBacktestResult] = useState<BacktestResult | null>(null);
   const [activeFilename, setActiveFilename] = useState<string | null>(null);
@@ -30,10 +49,7 @@ export function App() {
   });
 
   // Run backtest function
-  const executeBacktestSimulation = (
-    data: ParsedPriceData,
-    currentConfig: BacktestConfig
-  ) => {
+  const executeBacktestSimulation = (data: ParsedPriceData, currentConfig: BacktestConfig) => {
     try {
       let strategyFn;
       if (currentConfig.strategyType === 'ma_crossover') {
@@ -41,7 +57,7 @@ export function App() {
       } else if (currentConfig.strategyType === 'rsi_reversion') {
         strategyFn = createRSIStrategy(14, 32, 68);
       } else {
-        strategyFn = createMomentumStrategy(10);
+        strategyFn = createMomentumStrategy(currentConfig.momentumLookback || 10);
       }
 
       const result = runBacktest(
@@ -84,7 +100,6 @@ export function App() {
   const handleConfigChange = (newConfig: BacktestConfig) => {
     setConfig(newConfig);
     if (parsedData) {
-      // Validate slow period against available data length
       if (parsedData.prices.length < newConfig.slowPeriod) {
         setError(`Insufficient data: Loaded dataset has ${parsedData.prices.length} prices, but Slow MA period is ${newConfig.slowPeriod}.`);
         return;
@@ -93,19 +108,26 @@ export function App() {
     }
   };
 
-  // Load default preset on startup
-  useEffect(() => {
-    const defaultPreset = SAMPLE_DATASETS[0];
-    const jsonStr = JSON.stringify(defaultPreset.data);
-    handleRunBacktest(jsonStr, `${defaultPreset.id}.json`, config);
-  }, []);
+  // Reset everything – clears all data and resets config to default, no auto-load
+  const resetBacktest = () => {
+    setParsedData(null);
+    setBacktestResult(null);
+    setActiveFilename(null);
+    setError(null);
+    setConfig({
+      initialBalance: 50,
+      minTradeSize: 5,
+      fastPeriod: 5,
+      slowPeriod: 20,
+      strategyType: 'ma_crossover'
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col selection:bg-cyan-500 selection:text-slate-950">
-      <Navbar />
+    <div className={`min-h-screen bg-slate-950 dark:bg-slate-950 bg-white text-slate-100 dark:text-slate-100 text-gray-900 flex flex-col selection:bg-cyan-500 selection:text-slate-950 transition-colors`}>
+      <Navbar theme={theme} onToggleTheme={toggleTheme} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Top File Upload / Input Section */}
         <section>
           <FileUploadCard
             onRunBacktest={handleRunBacktest}
@@ -114,24 +136,40 @@ export function App() {
             activeFilename={activeFilename}
             currentConfig={config}
             onConfigChange={handleConfigChange}
+            onReset={resetBacktest}
           />
         </section>
 
-        {/* Results Section */}
-        {backtestResult && parsedData && !error && (
+        {!backtestResult || !parsedData || error ? (
+          <section className="animate-fadeIn">
+            <div className="bg-slate-900/50 dark:bg-slate-900/50 bg-white/50 border border-slate-800 dark:border-slate-800 border-gray-300 rounded-2xl p-12 text-center">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="w-16 h-16 rounded-2xl bg-slate-800/50 dark:bg-slate-800/50 bg-gray-200/50 flex items-center justify-center">
+                  <FileJson className="w-8 h-8 text-slate-400 dark:text-slate-400 text-gray-500" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-200 dark:text-slate-200 text-gray-800">No Data Loaded</h3>
+                <p className="text-sm text-slate-400 dark:text-slate-400 text-gray-500 max-w-md">
+                  Upload a JSON file with sequential price keys <code className="text-cyan-400 font-mono">(p1, p2, ... pN)</code> or click one of the <strong className="text-slate-200 dark:text-slate-200 text-gray-700">Sample Data</strong> buttons below to start backtesting.
+                </p>
+                <div className="flex items-center space-x-2 text-xs font-mono text-slate-500 dark:text-slate-500 text-gray-400 bg-slate-950/50 dark:bg-slate-950/50 bg-gray-100/50 px-4 py-2 rounded-xl border border-slate-800/50 dark:border-slate-800/50 border-gray-300/50">
+                  <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>0 prices loaded — upload or select a preset</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        ) : (
           <section className="space-y-6 animate-fadeIn">
-            {/* Key Performance Indicators Grid */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Layers className="w-5 h-5 text-cyan-400" />
-                <h2 className="text-lg font-bold text-slate-100 tracking-tight">
+                <h2 className="text-lg font-bold text-slate-100 dark:text-slate-100 text-gray-900 tracking-tight">
                   Backtest Simulation Results
                 </h2>
               </div>
-
               <button
                 onClick={() => setShowRawModal(true)}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-mono font-medium transition-colors cursor-pointer"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900 dark:bg-slate-900 bg-gray-200 hover:bg-slate-800 dark:hover:bg-slate-800 border border-slate-800 dark:border-slate-800 border-gray-300 text-slate-300 dark:text-slate-300 text-gray-700 text-xs font-mono font-medium transition-colors cursor-pointer"
               >
                 <Code className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Inspect Raw JSON ({parsedData.keys.length} bars)</span>
@@ -140,81 +178,66 @@ export function App() {
 
             <StatsGrid result={backtestResult} />
 
-            {/* Navigation Tabs for Details */}
-            <div className="border-b border-slate-800 flex items-center justify-between">
+            <div className="border-b border-slate-800 dark:border-slate-800 border-gray-300 flex items-center justify-between">
               <div className="flex space-x-2">
                 <button
                   onClick={() => setActiveTab('chart')}
                   className={`flex items-center space-x-2 py-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer ${
                     activeTab === 'chart'
                       ? 'border-cyan-400 text-cyan-400 bg-cyan-500/5 rounded-t-xl'
-                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                      : 'border-transparent text-slate-400 dark:text-slate-400 text-gray-600 hover:text-slate-200'
                   }`}
                 >
                   <LineChart className="w-4 h-4" />
                   <span>Price & MA Signal Chart</span>
                 </button>
-
                 <button
                   onClick={() => setActiveTab('equity')}
                   className={`flex items-center space-x-2 py-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer ${
                     activeTab === 'equity'
                       ? 'border-emerald-400 text-emerald-400 bg-emerald-500/5 rounded-t-xl'
-                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                      : 'border-transparent text-slate-400 dark:text-slate-400 text-gray-600 hover:text-slate-200'
                   }`}
                 >
                   <TrendingUp className="w-4 h-4" />
                   <span>Portfolio Equity Curve</span>
                 </button>
-
                 <button
                   onClick={() => setActiveTab('trades')}
                   className={`flex items-center space-x-2 py-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer ${
                     activeTab === 'trades'
                       ? 'border-cyan-400 text-cyan-400 bg-cyan-500/5 rounded-t-xl'
-                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                      : 'border-transparent text-slate-400 dark:text-slate-400 text-gray-600 hover:text-slate-200'
                   }`}
                 >
                   <Table className="w-4 h-4" />
                   <span>Trades Table</span>
-                  <span className="bg-slate-800 text-slate-300 font-mono text-[10px] px-2 py-0.5 rounded-full">
+                  <span className="bg-slate-800 dark:bg-slate-800 bg-gray-300 text-slate-300 dark:text-slate-300 text-gray-700 font-mono text-[10px] px-2 py-0.5 rounded-full">
                     {backtestResult.totalTrades}
                   </span>
                 </button>
               </div>
-
-              <div className="hidden md:flex items-center space-x-2 text-xs font-mono text-slate-400">
+              <div className="hidden md:flex items-center space-x-2 text-xs font-mono text-slate-400 dark:text-slate-400 text-gray-600">
                 <Activity className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-                <span>Strategy: MA({config.fastPeriod}/{config.slowPeriod}) Crossover</span>
+                <span>Strategy: {config.strategyType.replace('_', ' ').toUpperCase()}</span>
               </div>
             </div>
 
-            {/* Tab Panels */}
             <div className="transition-all">
               {activeTab === 'chart' && (
-                <PriceChart
-                  timeline={backtestResult.timeline}
-                  fastPeriod={config.fastPeriod}
-                  slowPeriod={config.slowPeriod}
-                />
+                <PriceChart timeline={backtestResult.timeline} fastPeriod={config.fastPeriod} slowPeriod={config.slowPeriod} />
               )}
-
               {activeTab === 'equity' && (
-                <EquityChart
-                  timeline={backtestResult.timeline}
-                  initialBalance={config.initialBalance}
-                />
+                <EquityChart timeline={backtestResult.timeline} initialBalance={config.initialBalance} />
               )}
-
               {activeTab === 'trades' && (
-                <TradesTable trades={backtestResult.trades} />
+                <TradesTable trades={backtestResult.trades} strategyType={config.strategyType} config={config} />
               )}
             </div>
           </section>
         )}
       </main>
 
-      {/* Raw JSON Modal */}
       {showRawModal && parsedData && (
         <RawJsonModal
           keys={parsedData.keys}
@@ -224,11 +247,10 @@ export function App() {
         />
       )}
 
-      {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950 py-6 mt-12 text-center text-xs text-slate-500">
+      <footer className="border-t border-slate-900 dark:border-slate-900 border-gray-200 bg-slate-950 dark:bg-slate-950 bg-white py-6 mt-12 text-center text-xs text-slate-500 dark:text-slate-500 text-gray-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>
-            Quant<span className="text-slate-400 font-medium">Pulse</span> Client-Side Backtesting Terminal • Powered by React, Vite & TypeScript
+            Quant<span className="text-slate-400 dark:text-slate-400 text-gray-700 font-medium">Pulse</span> Client-Side Backtesting Terminal • Powered by React, Vite & TypeScript
           </p>
           <div className="flex items-center space-x-4 font-mono text-[11px]">
             <span>$0 Transaction Fees</span>
