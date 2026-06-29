@@ -1,6 +1,6 @@
 import React from 'react';
 import { BacktestResult } from '../types';
-import { DollarSign, TrendingUp, TrendingDown, Repeat, ShieldAlert, Award, BarChart3, Target } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, Repeat, ShieldAlert, Award, Target } from 'lucide-react';
 
 interface StatsGridProps {
   result: BacktestResult;
